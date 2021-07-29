@@ -1,0 +1,11 @@
+*{margin: 0; padding: 0; box-sizing: border-box;}
+ul, li{list-style: none;}
+a{text-decoration: none; color: inherit;}
+body{overflow: hidden;}
+
+#canvas{background: #000;}
+
+.menu{position: absolute; bottom: 0; width: 250px; margin-left: -100%; height: 350px; background: #eee; transition: .5s;}
+.menu .btn{margin: 20px 20px 20px 10px;}
+
+.margin-left-zero{margin-left: 0; transition: .5s;}
