@@ -70,46 +70,57 @@ const init = (_) => {
 window.onload = init;
 */
 
-const $ = e => document.querySelector(e);
-const $all = e => [...document.querySelectorAll(e)];
-
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const width = document.body.clientWidth;
 const height = document.body.clientHeight - 100;
+let snows = [];
+let start = null;
+let num = 100;
 canvas.width = width;
 canvas.height = height;
 
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
 
-const render = _ => {
-    let min = $('#size').value;
-    let max = min++;
-    const x = width / 2;
-    const y = height / 2;
+const renderSnow = _ => {
+    let min = +document.querySelector('#size').value;
+    let max = +min + 10;
+    const x = getRandomNumber(0, width);
+    const y = 0;
     const radius = getRandomNumber(min, max);
     const startAngle = 0;
     const endAngle = Math.PI * 2;
+    window.requestAnimationFrame(timestamp => snowRain(timestamp, x, y, radius, startAngle, endAngle));
+}
 
-    ctx.clearRect(0, 0, width, height);
-    ctx.strokeStyle = '#fff';
-    ctx.fillStyle = "#fff"
-    ctx.beginPath();
-    ctx.arc(x, y, radius, startAngle, endAngle);
-    ctx.stroke();
-    ctx.fill();
+const snowRain = (timestamp, x, y, r, startAngle, end) => {
+  if (!start) start = timestamp;
+  let progress = timestamp - start;
+  y = Math.min(progress / 10, height + r);
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = '#fff';
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(x, y - r, r, startAngle, end);
+  ctx.stroke();
+  ctx.fill();
+  if (progress < height * 10 + r) window.requestAnimationFrame(timestamp => snowRain(timestamp, x, y, r, startAngle, end));
+}
+
+const render = _ => {
+  renderSnow();
 }
 
 const handelRangeChange = _ => {
-    render();
+  render();
 }
 
 const evt = _ => {
-    $('#size').addEventListener('change', handelRangeChange)
+  document.querySelector('#size').addEventListener('change', handelRangeChange)
 }
 const init = _ => {
-    evt();
-    render();
+  evt();
+  render();
 }
 
 init();
