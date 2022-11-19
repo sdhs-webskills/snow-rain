@@ -13,11 +13,6 @@ body {
     height: 100vh;
 }
 
-.ctrlContainer {
-    height: 100px;
-    background: #ccc;
-}
-
 #canvas {
     background: #000;
 }

@@ -73,24 +73,49 @@ window.onload = init;
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const width = document.body.clientWidth;
-const height = document.body.clientHeight - 100;
-let snows = [];
-let start = null;
-let num = 100;
+const height = document.body.clientHeight;
 canvas.width = width;
 canvas.height = height;
 
+let data = {
+  size: 10,
+  opacity: 1,
+  speed: 1,
+  shake: 1,
+  mouseArea: 50,
+  snows: []
+};
+
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
 
-const renderSnow = _ => {
-    let min = +document.querySelector('#size').value;
-    let max = +min + 10;
-    const x = getRandomNumber(0, width);
-    const y = 0;
-    const radius = getRandomNumber(min, max);
-    const startAngle = 0;
-    const endAngle = Math.PI * 2;
-    window.requestAnimationFrame(timestamp => snowRain(timestamp, x, y, radius, startAngle, endAngle));
+const setData = (state = {}) => {
+  data = {...data, ...state};
+};
+
+const addSnow = () => {
+  setData({snows: [...data.snows, {
+    x: 0,
+    y: 0,
+    radius: 10,
+    startAngle: 0,
+    endAngle: Math.PI * 2,
+  }]})
+}
+
+const snowFall = () => {}
+
+const renderSnow = () => {}
+
+/*
+const render = _ => {
+  let min = +$size.value;
+  let max = +min + 10;
+  const x = getRandomNumber(0, width);
+  const y = 0;
+  const radius = getRandomNumber(min, max);
+  const startAngle = 0;
+  const endAngle = Math.PI * 2;
+  window.requestAnimationFrame(timestamp => snowRain(timestamp, x, y, radius, startAngle, endAngle));
 }
 
 const snowRain = (timestamp, x, y, r, startAngle, end) => {
@@ -106,21 +131,13 @@ const snowRain = (timestamp, x, y, r, startAngle, end) => {
   ctx.fill();
   if (progress < height * 10 + r) window.requestAnimationFrame(timestamp => snowRain(timestamp, x, y, r, startAngle, end));
 }
+*/
 
-const render = _ => {
-  renderSnow();
-}
+const evt = _ => {}
 
-const handelRangeChange = _ => {
-  render();
-}
-
-const evt = _ => {
-  document.querySelector('#size').addEventListener('change', handelRangeChange)
-}
 const init = _ => {
   evt();
   render();
 }
 
-init();
+init;
