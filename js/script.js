@@ -77,6 +77,8 @@ const height = document.body.clientHeight;
 canvas.width = width;
 canvas.height = height;
 
+let start = null;
+let num = 2;
 let data = {
   size: 10,
   opacity: 1,
@@ -88,23 +90,52 @@ let data = {
 
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
 
-const setData = (state = {}) => {
-  data = {...data, ...state};
+const addSnow = ( x, y, radius, startAngle, endAngle) => {
+  data = {
+    ...data,
+    snows: [...data.snows, { x, y, radius, startAngle, endAngle,}]
+  };
 };
 
-const addSnow = () => {
-  setData({snows: [...data.snows, {
-    x: 0,
-    y: 0,
-    radius: 10,
-    startAngle: 0,
-    endAngle: Math.PI * 2,
-  }]})
+const createSnow = () => {
+  for (let i = 0; i < num; i++) {
+    const min = 10;
+    const max = min + 10;
+    const x = getRandomNumber(0, width);
+    const y = 0;
+    const radius = getRandomNumber(min, max);
+    const startAngle = 0;
+    const endAngle = Math.PI * 2;
+    addSnow( x, y, radius, startAngle, endAngle);
+  }
 }
 
-const snowFall = () => {}
+const snowFall = timestamp => {
+  data.snows.forEach(snow => {
+    snow = { ...snow, y: timestamp += timestamp }
+    console.log(snow.y);
+  })
+}
 
-const renderSnow = () => {}
+const renderSnow = timestamp => {
+  ctx.clearRect(0, 0, width, height);
+  data.snows.forEach(snow => {
+    const { x, y, radius, startAngle, endAngle } = snow;
+    ctx.strokeStyle = '#fff';
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(x, y - radius, radius, startAngle, endAngle);
+    ctx.stroke();
+    ctx.fill();
+    snowFall(timestamp);
+    window.requestAnimationFrame(timestamp => renderSnow(timestamp));
+  })
+}
+
+const render = () => {
+  createSnow();
+  window.requestAnimationFrame(timestamp => renderSnow(timestamp));
+}
 
 /*
 const render = _ => {
@@ -133,11 +164,11 @@ const snowRain = (timestamp, x, y, r, startAngle, end) => {
 }
 */
 
-const evt = _ => {}
+// const evt = _ => {}
 
 const init = _ => {
-  evt();
+  // evt();
   render();
 }
 
-init;
+init();
