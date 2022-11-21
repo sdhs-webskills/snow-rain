@@ -90,10 +90,10 @@ let data = {
 
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
 
-const addSnow = ( x, y, radius, startAngle, endAngle) => {
+const addSnow = ( x, y, radius, startAngle, endAngle, speed) => {
   data = {
     ...data,
-    snows: [...data.snows, { x, y, radius, startAngle, endAngle,}]
+    snows: [...data.snows, { x, y, radius, startAngle, endAngle, speed }]
   };
 };
 
@@ -106,18 +106,23 @@ const createSnow = () => {
     const radius = getRandomNumber(min, max);
     const startAngle = 0;
     const endAngle = Math.PI * 2;
-    addSnow( x, y, radius, startAngle, endAngle);
+    const speed = getRandomNumber(1, 2);
+    addSnow( x, y, radius, startAngle, endAngle, speed );
   }
 }
 
-const snowFall = timestamp => {
+const snowFall = () => {
+  let isFall;
   data.snows.forEach(snow => {
-    snow = { ...snow, y: timestamp += timestamp }
+    snow = { ...snow, y: snow.y += snow.speed }
     console.log(snow.y);
+    isFall = snow.y < height;
   })
+  renderSnow();
+  if(isFall) window.requestAnimationFrame(snowFall);
 }
 
-const renderSnow = timestamp => {
+const renderSnow = () => {
   ctx.clearRect(0, 0, width, height);
   data.snows.forEach(snow => {
     const { x, y, radius, startAngle, endAngle } = snow;
@@ -127,14 +132,12 @@ const renderSnow = timestamp => {
     ctx.arc(x, y - radius, radius, startAngle, endAngle);
     ctx.stroke();
     ctx.fill();
-    snowFall(timestamp);
-    window.requestAnimationFrame(timestamp => renderSnow(timestamp));
   })
 }
 
 const render = () => {
   createSnow();
-  window.requestAnimationFrame(timestamp => renderSnow(timestamp));
+  snowFall();
 }
 
 /*
