@@ -5,8 +5,6 @@ const height = document.body.clientHeight;
 canvas.width = width;
 canvas.height = height;
 
-let start = null;
-let num = 10;
 let data = {
   size: 10,
   opacity: 1,
@@ -18,36 +16,34 @@ let data = {
 
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
 
-const addSnow = ( x, y, radius, startAngle, endAngle, speed) => {
-  data = {
-    ...data,
-    snows: [...data.snows, { x, y, radius, startAngle, endAngle, speed }]
-  };
-};
-
-const createSnow = () => {
-  for (let i = 0; i < num; i++) {
-    const min = 10;
-    const max = min + 10;
-    const x = getRandomNumber(0, width);
-    const y = 0;
-    const radius = getRandomNumber(min, max);
-    const startAngle = 0;
-    const endAngle = Math.PI * 2;
-    const speed = getRandomNumber(1, 2);
-    addSnow( x, y, radius, startAngle, endAngle, speed );
-  }
+const removeSnow = () => {
+  data.snows = data.snows.filter(snow => snow.y < height);
 }
 
-const snowFall = () => {
-  let isFall;
+const createSnow = () => {
+  const min = 1;
+  const max = min + 10;
+  data = {
+    ...data,
+    snows: [
+      ...data.snows,
+      {
+        x: getRandomNumber(0, width),
+        y: 0,
+        radius: getRandomNumber(min, max),
+        startAngle: 0,
+        endAngle: Math.PI * 2,
+        speed : getRandomNumber(1, 2),
+        isDrop : false
+      }
+    ]
+  }
+};
+
+const dropSnow = () => {
   data.snows.forEach(snow => {
     snow = { ...snow, y: snow.y += snow.speed }
-    console.log(snow.y);
-    isFall = snow.y < height;
-  })
-  renderSnow();
-  if(isFall) window.requestAnimationFrame(snowFall);
+  });
 }
 
 const renderSnow = () => {
@@ -61,15 +57,14 @@ const renderSnow = () => {
     ctx.stroke();
     ctx.fill();
   })
+  window.requestAnimationFrame(init);
 }
 
-const render = () => {
+const init = () => {
+  removeSnow();
   createSnow();
-  snowFall();
-}
-
-const init = _ => {
-  render();
+  dropSnow();
+  renderSnow();
 }
 
 init();
