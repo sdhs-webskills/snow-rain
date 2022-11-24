@@ -1,10 +1,8 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const width = document.body.clientWidth;
-const height = document.body.clientHeight;
-canvas.width = width;
-canvas.height = height;
 
+let width;
+let height;
 let data = {
   size: 10,
   opacity: 1,
@@ -15,6 +13,13 @@ let data = {
 };
 
 const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
+
+const windowResizeHandler = () => {
+  width = document.body.clientWidth;
+  height = document.body.clientHeight;
+  canvas.width = width;
+  canvas.height = height;
+}
 
 const removeSnow = () => {
   data.snows = data.snows.filter(snow => snow.y < height);
@@ -57,14 +62,21 @@ const renderSnow = () => {
     ctx.stroke();
     ctx.fill();
   })
-  window.requestAnimationFrame(init);
+  window.requestAnimationFrame(render);
 }
 
-const init = () => {
+const render = () => {
   removeSnow();
   createSnow();
   dropSnow();
   renderSnow();
 }
+
+const init = () => {
+  windowResizeHandler();
+  render();
+}
+
+window.addEventListener('resize', windowResizeHandler);
 
 init();
