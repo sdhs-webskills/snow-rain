@@ -10,12 +10,15 @@ const $size = document.getElementById('size');
 const $speed = document.getElementById('speed');
 const $shake = document.getElementById('shake');
 const $mouseArea = document.getElementById('mouseArea');
+const $input = [...document.querySelectorAll('input')];
+$input.forEach(e => e.addEventListener('input', input => {
+  console.log(input.target);
+}))
 
-let isPause = false;
-let isMouseMove = false;
-let width, height, minSize, maxSize, minSpeed, maxSpeed, shakeRange, offsetX, offsetY, mouseArea;
-
+let width, height, minSize, maxSize, minSpeed, maxSpeed, shakeRange, mouseX, mouseY, mouseArea;
 let data = {
+  isPause: false,
+  isMouseMove: false,
   snows: []
 };
 
@@ -47,7 +50,11 @@ const createSnow = () => {
 
 const dropSnow = () => {
   data.snows.forEach(snow => {
-    snow.y + snow.speed < height - snow.radius ? snow.y += snow.speed : snow.y = height - snow.radius;
+    (
+      snow.y + snow.speed < height - snow.radius ?
+      snow.y += snow.speed :
+      snow.y = height - snow.radius
+    );
   });
 }
 
@@ -56,28 +63,45 @@ const shakeSnow = () => {
     if (snow.y === height - snow.radius) return;
     const minShake = snow.center - shakeRange;
     const maxShake = snow.center + shakeRange;
-    snow.x + snow.shake < minShake || snow.x + snow.shake > maxShake ?
-      Math.sign(snow.shake) ? snow.shake *= -1 : snow.shake = Math.abs(snow.shake) : snow.x += snow.shake;
+    (
+      snow.x + snow.shake < minShake || snow.x + snow.shake > maxShake ?
+      Math.sign(snow.shake) ? snow.shake *= -1 :
+      snow.shake = Math.abs(snow.shake) : snow.x += snow.shake
+    );
   });
 }
 
 const removeSnow = () => {
   data.snows.forEach(snow => {
     if (snow.y === height - snow.radius) {
-      snow.radius - snow.meltingSpeed < 0 ? snow.radius = 0 : snow.radius -= snow.meltingSpeed;
-      snow.alpha - 0.01 < 0 ? snow.alpha = 0 : snow.alpha -= 0.01;
+      (
+        snow.radius - snow.meltingSpeed < 0 ?
+        snow.radius = 0 :
+        snow.radius -= snow.meltingSpeed
+      );
+      (
+        snow.alpha - 0.01 < 0 ?
+        snow.alpha = 0 :
+        snow.alpha -= 0.01
+      );
     }
   })
   data.snows = data.snows.filter(snow => snow.radius || snow.alpha);
 }
 
 const renderSnow = () => {
+  const { isPause, isMouseMove } = data;
   ctx.clearRect(0, 0, width, height);
   data.snows.forEach(snow => {
     const { x, y, radius, startAngle, endAngle, alpha } = snow;
-    let r;
-    isMouseMove && x > offsetX - mouseArea && x < offsetX + mouseArea && y > offsetY - mouseArea && y < offsetY + mouseArea ?
-      r = radius / 2 : r = radius;
+    const r = (
+      isMouseMove &&
+      x > mouseX - mouseArea &&
+      x < mouseX + mouseArea &&
+      y > mouseY - mouseArea &&
+      y < mouseY + mouseArea ?
+      radius / 2 : radius
+    );
     ctx.strokeStyle = '#fff';
     ctx.fillStyle = '#fff';
     ctx.globalAlpha = alpha;
@@ -93,7 +117,7 @@ const renderSnow = () => {
 const renderMouseArea = () => {
   ctx.globalAlpha = 1;
   ctx.beginPath();
-  ctx.arc(offsetX, offsetY, mouseArea, 0, Math.PI * 2);
+  ctx.arc(mouseX, mouseY, mouseArea, 0, Math.PI * 2);
   ctx.stroke();
 }
 
@@ -106,14 +130,14 @@ const render = () => {
 }
 
 const handleWindowMousemove = e => {
-  isMouseMove = true;
-  offsetX = e.offsetX;
-  offsetY = e.offsetY;
+  data.isMouseMove = true;
+  mouseX = e.offsetX;
+  mouseY = e.offsetY;
 }
 
-const handleWindowMouseleave = () => isMouseMove = false;
+const handleWindowMouseleave = () => data.isMouseMove = false;
 
-const handleWindowKeydown = e => [32].includes(e.keyCode) ? isPause = !isPause : isPause;
+const handleWindowKeydown = e => [32].includes(e.keyCode) ? data.isPause = !data.isPause : data.isPause;
 
 const handleWindowResize = () => {
   width = document.body.clientWidth;
@@ -152,19 +176,27 @@ const resetShake = () => {
   })
 }
 
-const handleSizeInput = () => {
+const handleInput = e => {
+  {
+    /*
+    const inputName = e.target.name;
+    const inputValue = +e.target.value;
+    const beforeValue = (
+      inputName === 'size' ? minSize :
+      inputName === 'speed' ? minSpeed :
+      inputName === 'shake' ? shakeRange : inputValue
+    )
+    const afterValue = inputValue;
+    const changedValue = Math.max(beforeValue, afterValue) / Math.min(beforeValue, afterValue);
+    */
+  }
   minSize = +$size.value;
   maxSize = minSize * 2;
-}
-
-const handleSpeedInput = () => {
   minSpeed = +$speed.value;
   maxSpeed = minSpeed * 2;
+  shakeRange = +$shake.value;
+  mouseArea = +$mouseArea.value;
 }
-
-const handleShakeInput = () => shakeRange = +$shake.value;
-
-const handleMouseAreaInput = () => mouseArea = +$mouseArea.value;
 
 const evt = () => {
   window.addEventListener('keydown', handleWindowKeydown);
@@ -172,20 +204,14 @@ const evt = () => {
   canvas.addEventListener('mousemove', handleWindowMousemove);
   canvas.addEventListener('mouseleave', handleWindowMouseleave);
   $size.addEventListener('input', resizeSnow);
-  $size.addEventListener('input', handleSizeInput);
   $speed.addEventListener('input', resetSpeed);
-  $speed.addEventListener('input', handleSpeedInput);
   $shake.addEventListener('input', resetShake);
-  $shake.addEventListener('input', handleShakeInput);
-  $mouseArea.addEventListener('input', handleMouseAreaInput);
+  $input.forEach(e => e.addEventListener('input', handleInput));
 }
 
 const initValue = () => {
   handleWindowResize();
-  handleSizeInput();
-  handleSpeedInput();
-  handleShakeInput();
-  handleMouseAreaInput();
+  handleInput();
 }
 
 const init = () => {
