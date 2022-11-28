@@ -1,19 +1,6 @@
-/**
- * 할 것
- * 1. 데이터 구조 바꾸기
- * 2. 중복되는 코드 없애고 리팩토링 하기
- */
-
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const $size = document.getElementById('size');
-const $speed = document.getElementById('speed');
-const $shake = document.getElementById('shake');
-const $mouseArea = document.getElementById('mouseArea');
 const $input = [...document.querySelectorAll('input')];
-$input.forEach(e => e.addEventListener('input', input => {
-  console.log(input.target);
-}))
 
 let width, height, minSize, maxSize, minSpeed, maxSpeed, shakeRange, mouseX, mouseY, mouseArea;
 let data = {
@@ -129,6 +116,13 @@ const render = () => {
   renderSnow();
 }
 
+const changeSnowValue = (snowValue, beforeValue, afterValue) => {
+  const changedValue = Math.max(beforeValue, afterValue) / Math.min(beforeValue, afterValue);
+  beforeValue > afterValue ? snowValue /= changedValue :
+  beforeValue < afterValue ? snowValue *= changedValue : snowValue;
+  return snowValue;
+}
+
 const handleWindowMousemove = e => {
   data.isMouseMove = true;
   mouseX = e.offsetX;
@@ -146,56 +140,26 @@ const handleWindowResize = () => {
   canvas.height = height;
 }
 
-const resizeSnow = () => {
-  const beforeSize = minSize;
-  const afterSize = +$size.value;
-  const changedSize = Math.max(beforeSize, afterSize) / Math.min(beforeSize, afterSize);
-  data.snows.forEach(snow => {
-    beforeSize > afterSize ? snow.radius /= changedSize :
-      beforeSize < afterSize ? snow.radius *= changedSize : snow.radius;
-  })
-}
-
-const resetSpeed = () => {
-  const beforeSpeed = minSpeed;
-  const afterSpeed = +$speed.value;
-  const changedSpeed = Math.max(beforeSpeed, afterSpeed) / Math.min(beforeSpeed, afterSpeed);
-  data.snows.forEach(snow => {
-    beforeSpeed > afterSpeed ? snow.speed /= changedSpeed :
-      beforeSpeed < afterSpeed ? snow.speed *= changedSpeed : snow.speed;
-  })
-}
-
-const resetShake = () => {
-  const beforeShake = shakeRange;
-  const afterShake = +$shake.value;
-  const changedShake = Math.max(beforeShake, afterShake) / Math.min(beforeShake, afterShake);
-  data.snows.forEach(snow => {
-    beforeShake > afterShake ? snow.shake /= changedShake :
-      beforeShake < afterShake ? snow.shake *= changedShake : snow.shake;
-  })
-}
-
 const handleInput = e => {
-  {
-    /*
-    const inputName = e.target.name;
-    const inputValue = +e.target.value;
-    const beforeValue = (
-      inputName === 'size' ? minSize :
-      inputName === 'speed' ? minSpeed :
-      inputName === 'shake' ? shakeRange : inputValue
-    )
-    const afterValue = inputValue;
-    const changedValue = Math.max(beforeValue, afterValue) / Math.min(beforeValue, afterValue);
-    */
-  }
-  minSize = +$size.value;
+  const inputName = e.target.name;
+  const inputValue = +e.target.value;
+  data.snows.forEach(snow => {
+    inputName === 'size' ? snow.radius = changeSnowValue(snow.radius, minSize, inputValue) :
+    inputName === 'speed' ? snow.speed = changeSnowValue(snow.speed, minSpeed, inputValue) :
+    inputName === 'shake' ? snow.shake =  changeSnowValue(snow.shake, shakeRange, inputValue) : inputName;
+  })
+  initInputValue();
+}
+
+const initInputValue = () => {
+  $input.forEach(e => {
+    minSize = e.name === 'size' ? +e.value : minSize;
+    minSpeed = e.name === 'speed' ? +e.value : minSpeed;
+    shakeRange = e.name === 'shake' ? +e.value : shakeRange;
+    mouseArea = e.name === 'mouseArea' ? +e.value : mouseArea;
+  })
   maxSize = minSize * 2;
-  minSpeed = +$speed.value;
   maxSpeed = minSpeed * 2;
-  shakeRange = +$shake.value;
-  mouseArea = +$mouseArea.value;
 }
 
 const evt = () => {
@@ -203,15 +167,12 @@ const evt = () => {
   window.addEventListener('resize', handleWindowResize);
   canvas.addEventListener('mousemove', handleWindowMousemove);
   canvas.addEventListener('mouseleave', handleWindowMouseleave);
-  $size.addEventListener('input', resizeSnow);
-  $speed.addEventListener('input', resetSpeed);
-  $shake.addEventListener('input', resetShake);
   $input.forEach(e => e.addEventListener('input', handleInput));
 }
 
 const initValue = () => {
   handleWindowResize();
-  handleInput();
+  initInputValue();
 }
 
 const init = () => {
