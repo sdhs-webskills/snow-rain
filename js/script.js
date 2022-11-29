@@ -15,6 +15,7 @@ const createSnow = () => {
   const x = getRandomNumber(0, width);
   const radius = getRandomNumber(minSize, maxSize);
   const shake = getRandomNumber(-shakeRange, shakeRange);
+  const speed = getRandomNumber(minSpeed, maxSpeed);
   data = {
     ...data,
     snows: [
@@ -25,7 +26,7 @@ const createSnow = () => {
         radius,
         startAngle: 0,
         endAngle: Math.PI * 2,
-        speed: getRandomNumber(minSpeed, maxSpeed),
+        speed,
         alpha: Math.random(),
         center: x,
         meltingSpeed: radius * 0.02,
@@ -77,11 +78,10 @@ const removeSnow = () => {
 }
 
 const renderSnow = () => {
-  const { isPause, isMouseMove } = data;
+  const { isPause, isMouseMove, snows } = data;
   ctx.clearRect(0, 0, width, height);
-  data.snows.forEach(snow => {
-    const { x, y, radius, startAngle, endAngle, alpha } = snow;
-    const r = (
+  snows.forEach(({ x, y, radius, startAngle, endAngle, alpha }) => {
+    radius = (
       isMouseMove &&
       x > mouseX - mouseArea &&
       x < mouseX + mouseArea &&
@@ -93,7 +93,7 @@ const renderSnow = () => {
     ctx.fillStyle = '#fff';
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.arc(x, y, r, startAngle, endAngle);
+    ctx.arc(x, y, radius, startAngle, endAngle);
     ctx.stroke();
     ctx.fill();
   })
@@ -116,22 +116,15 @@ const render = () => {
   renderSnow();
 }
 
-const changeSnowValue = (snowValue, beforeValue, afterValue) => {
-  const changedValue = Math.max(beforeValue, afterValue) / Math.min(beforeValue, afterValue);
-  beforeValue > afterValue ? snowValue /= changedValue :
-  beforeValue < afterValue ? snowValue *= changedValue : snowValue;
-  return snowValue;
-}
-
-const handleWindowMousemove = e => {
+const handleWindowMousemove = ({offsetX, offsetY}) => {
   data.isMouseMove = true;
-  mouseX = e.offsetX;
-  mouseY = e.offsetY;
+  mouseX = offsetX;
+  mouseY = offsetY;
 }
 
 const handleWindowMouseleave = () => data.isMouseMove = false;
 
-const handleWindowKeydown = e => [32].includes(e.keyCode) ? data.isPause = !data.isPause : data.isPause;
+const handleWindowKeydown = ({keyCode}) => [32].includes(keyCode) ? data.isPause = !data.isPause : data.isPause;
 
 const handleWindowResize = () => {
   width = document.body.clientWidth;
@@ -140,9 +133,16 @@ const handleWindowResize = () => {
   canvas.height = height;
 }
 
-const handleInput = e => {
-  const inputName = e.target.name;
-  const inputValue = +e.target.value;
+const changeSnowValue = (snowValue, beforeValue, afterValue) => {
+  const changedValue = Math.max(beforeValue, afterValue) / Math.min(beforeValue, afterValue);
+  beforeValue > afterValue ? snowValue /= changedValue :
+  beforeValue < afterValue ? snowValue *= changedValue : snowValue;
+  return snowValue;
+}
+
+const handleInput = ({target}) => {
+  const inputName = target.name;
+  const inputValue = +target.value;
   data.snows.forEach(snow => {
     inputName === 'size' ? snow.radius = changeSnowValue(snow.radius, minSize, inputValue) :
     inputName === 'speed' ? snow.speed = changeSnowValue(snow.speed, minSpeed, inputValue) :
@@ -152,11 +152,11 @@ const handleInput = e => {
 }
 
 const initInputValue = () => {
-  $input.forEach(e => {
-    minSize = e.name === 'size' ? +e.value : minSize;
-    minSpeed = e.name === 'speed' ? +e.value : minSpeed;
-    shakeRange = e.name === 'shake' ? +e.value : shakeRange;
-    mouseArea = e.name === 'mouseArea' ? +e.value : mouseArea;
+  $input.forEach(({value, name}) => {
+    minSize = name === 'size' ? +value : minSize;
+    minSpeed = name === 'speed' ? +value : minSpeed;
+    shakeRange = name === 'shake' ? +value : shakeRange;
+    mouseArea = name === 'mouseArea' ? +value : mouseArea;
   })
   maxSize = minSize * 2;
   maxSpeed = minSpeed * 2;
